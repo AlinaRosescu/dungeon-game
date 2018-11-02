@@ -1,211 +1,223 @@
 const app = new PIXI.Application({width:850, height:500});
-    app.view.style.border= "5px solid black";
+app.view.style.border= "5px solid black";
 
-    //add the canvas to the html document
-    document.body.appendChild(app.view);
+//add the canvas to the html document
+document.body.appendChild(app.view);
 
-    let player,state;
+let gameScene,player,state, healthBar;
 
-    //load and create sprite
-    PIXI.loader
-        .add([
-            "images/grid.png",
-            "images/grid-border.png",
-            "images/gate.png",
-            "images/end-gate.png",
-            "images/monster.png"])
-        .load(setup);
+//load and create sprite
+PIXI.loader
+    .add([
+        "images/grid.png",
+        "images/grid-border.png",
+        "images/start-gate.png",
+        "images/end-gate.png",
+        "images/monster.png"])
+    .load(setup);
 
-    function setup() {
-        let background = new PIXI.Sprite(
-            PIXI.loader.resources["images/grid.png"].texture);
-        background.scale.set(0.7,0.8);
-        background.position.set(50,55);
+function setup() {
+    //make a new game scene and add it to stage
+    gameScene = new PIXI.Container();
+    app.stage.addChild(gameScene);
 
-        let border = new PIXI.Sprite(
-            PIXI.loader.resources["images/grid-border.png"].texture);
-        border.position.set(-20, -65);
-        border.scale.set(0.7,0.8);
+    //add dungoen floor texture
+    let background = new PIXI.Sprite(
+        PIXI.loader.resources["images/grid.png"].texture);
+    background.scale.set(0.7,0.8);
+    background.position.set(50,55);
+    gameScene.addChild(background);
 
-        let gate = new PIXI.Sprite(
-            PIXI.loader.resources["images/gate.png"].texture);
-        gate.position.set(150,0);
-        gate.scale.set(0.7, 0.7);
+    //add dungeon walls
+    let border = new PIXI.Sprite(
+        PIXI.loader.resources["images/grid-border.png"].texture);
+    border.position.set(-20, -65);
+    border.scale.set(0.7,0.8);
+    gameScene.addChild(border);
 
-        let endGate = new PIXI.Sprite(
-            PIXI.loader.resources["images/end-gate.png"].texture);
-        endGate.position.set(800,350);
-        endGate.scale.set(0.7, 0.7);
+    //add start gate
+    let startGate = new PIXI.Sprite(
+        PIXI.loader.resources["images/start-gate.png"].texture);
+    startGate.position.set(150,0);
+    startGate.scale.set(0.7, 0.7);
+    gameScene.addChild(startGate);
 
-        //add chest
-        let texture = PIXI.Texture.fromImage("images/chest-tileset.png");
-        let rectangle = new PIXI.Rectangle(0,0,30,30);
-        texture.frame = rectangle;
-        let chest = new PIXI.Sprite(texture);
-        chest.position.set(650,280);
-        chest.scale.set(1.5,1.5);
+    //add end gate
+    let endGate = new PIXI.Sprite(
+        PIXI.loader.resources["images/end-gate.png"].texture);
+    endGate.position.set(800,350);
+    endGate.scale.set(0.7, 0.7);
+    gameScene.addChild(endGate);
 
-        //add all sprites to the stage
-        app.stage.addChild(background,border,gate,endGate,chest);
+    //add chest
+    let chestTexture = PIXI.Texture.fromImage("images/chest-tileset.png");
+    let chestRectangle = new PIXI.Rectangle(0,0,30,30);
+    chestTexture.frame = chestRectangle;
 
-        //add monsters
-        let numberOfMonsters = 7;
-            spacing = 50;
-            xOffset = 250;
+    let chest = new PIXI.Sprite(chestTexture);
+    chest.position.set(650,280);
+    chest.scale.set(1.5,1.5);
+    gameScene.addChild(chest);
 
-        for(let i = 0; i < numberOfMonsters; i++) {
-            let monster = new PIXI.Sprite(
-                PIXI.loader.resources["images/monster.png"].texture);
-            let x = spacing * i + xOffset;
-            let y = randomInt(50, app.stage.height - monster.height- 200);
-            monster.x = x;
-            monster.y = y;
-            monster.scale.set(1.5, 1.5);
-            app.stage.addChild(monster);
+    //add monsters
+    let numberOfMonsters = 7;
+        spacing = 50;
+        xOffset = 250;
+        speed = 1;
+        direction = 1;
+        monsters = [];
+
+    for(let i = 0; i < numberOfMonsters; i++) {
+        let monster = new PIXI.Sprite(
+            PIXI.loader.resources["images/monster.png"].texture);
+        let x = spacing * i + xOffset;
+        let y = randomInt(50, app.stage.height - monster.height- 200);
+        monster.x = x;
+        monster.y = y;
+        monster.scale.set(1.5, 1.5);
+        monster.vy = speed * direction;
+        direction *= -1;
+
+        monsters.push(monster);
+        gameScene.addChild(monster);
+    }
+
+    //add player
+    let playerTexture = PIXI.Texture.fromImage("images/fox-tileset.png");
+    let playerRectangle = new PIXI.Rectangle(0,15,50,65);
+    playerTexture.frame = playerRectangle;
+    player = new PIXI.Sprite(playerTexture);
+    player.scale.set(0.8,0.8);
+    player.x = 150;
+    player.y = 150;
+    player.vx = 0;
+    player.vy = 0;
+    player.accelerationX = 0;
+    player.accelerationY = 0;
+    player.frictionX = 1;
+    player.frictionY = 1;
+    player.speed = 1;
+    player.drag = 1.5;
+    gameScene.addChild(player);
+
+
+    //create health bar
+    healthBar = new PIXI.Container();
+    healthBar.position.set(app.stage.width - 210, 10);
+    gameScene.addChild(healthBar);
+
+    let outerBar = new PIXI.Graphics();
+    outerBar.beginFill(0x000000);
+    outerBar.drawRect(0,0,120,20);
+    outerBar.endFill();
+    healthBar.addChild(outerBar);
+
+    let innerBar = new PIXI.Graphics();
+    innerBar.beginFill(0xFF3300);
+    innerBar.drawRect(5,5,110,10);
+    innerBar.endFill();
+    healthBar.addChild(innerBar);
+
+    healthBar.inner = innerBar;
+
+    //add event listeners for keyboard controls
+    document.addEventListener("keydown", keyboard);
+    document.addEventListener("keyup", keyboard);
+
+    //Set the game state
+    state = play;
+
+    //Start the game loop
+    gameLoop();
+}
+
+//function to make player move at 60fps
+function gameLoop() {
+    requestAnimationFrame(gameLoop);
+    state();
+    app.stage.addChild(player);
+}
+
+function play() {
+    //console.log(player.width);
+    if(player.x + player.width === 805 || player.x - player.width === 10) {
+        player.x += 1;
+    }
+    if(player.y + player.height === 490 || player.y - player.height === 10) {
+       player.y +=1;
+       healthBar.inner.width -= 1;
+    }
+
+    //adding acceleration and friction
+    player.vx = player.accelerationX;
+    player.vy = player.accelerationY;
+    player.vx *= player.frictionX;
+    player.vy *= player.frictionY;
+
+
+    //changing velocity properties
+    player.x += player.vx;
+    player.y += player.vy;
+
+
+    //move the monsters
+    monsters.forEach((monster) => {
+        monster.y += monster.vy;
+        if(monster.y - monster.height === 5) {
+           monster.vy = 1;
         }
 
-        //add player
-        let texture2 = PIXI.Texture.fromImage("images/fox-tileset.png");
-        let rectangle2 = new PIXI.Rectangle(0,15,50,65);
-        texture2.frame = rectangle2;
-        player = new PIXI.Sprite(texture2);
-        player.scale.set(0.8,0.8);
-        player.x = 150;
-        player.y = 150;
-        player.vx = 0;
-        player.vy = 0;
-        player.accelerationX = 0;
-        player.accelerationY = 0;
-        player.frictionX = 1;
-        player.frictionY = 1;
+        if(monster.y + monster.height === 460) {
+            monster.vy = -1;
+        }
+    });
 
-        player.speed = 0.5;
-        player.drag = 1;
 
-        app.stage.addChild(player);
 
-        //Capture the keyboard arrow keys
-        let left = keyboard(37),
-            up = keyboard(38),
-            right = keyboard(39),
-            down = keyboard(40);
+}
 
-        //Left arrow key `press` method
-        left.press = () => {
-            //Change the player's velocity when the key is pressed
-            player.accelerationX = -player.speed;
-            player.frictionX = 1;
-        };
+//random number function
+function randomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
 
-        //Left arrow key `release` method
-        left.release = () => {
-            //If the left arrow has been released, and the right arrow isn't down,
-            //and the player isn't moving vertically:
-            //Stop the player
-            if (!right.isDown) {
-                player.accelerationX = 0;
-                player.frictionX = player.drag;
-            }
-        };
-        //Up
-        up.press = () => {
-            player.accelerationY = -player.speed;
-            player.frictionY = 1;
-        };
-        up.release = () => {
-            if (!down.isDown) {
-                player.accelerationY = 0;
-                player.frictionY = player.drag;
-            }
-        };
-        //Right
-        right.press = () => {
-            player.accelerationX = player.speed;
-            player.frictionX = 1;
-        };
-        right.release = () => {
-            if (!left.isDown) {
-                player.accelerationX = 0;
-                player.frictionX = player.drag;
-            }
-        };
-
-        //Down
-        down.press = () => {
+function keyboard(key) {
+    let pressedKey;
+    if(key.code === "ArrowDown" || key.code === "KeyS") {
+        if(key.type ===  "keydown") {
+            pressedKey = "down";
             player.accelerationY = player.speed;
             player.frictionY = 1;
-        };
-        down.release = () => {
-            if (!up.isDown) {
-                player.accelerationY = 0;
-                player.frictionY = player.drag;
-            }
-        };
-
-        //Set the game state
-        state = play;
-
-        //Start the game loop
-        gameLoop();
+        } else if (key.type ===  "keyup" && pressedKey !== "up"){
+            player.accelerationY = 0;
+            player.frictionY = player.drag;
+        }
+    } else if(key.code === "ArrowUp" || key.code ==="KeyW"){
+        if(key.type ===  "keydown") {
+            pressedKey = "up";
+            player.accelerationY = -player.speed;
+            player.frictionY = 1;
+        } else if (key.type ===  "keyup" && pressedKey !== "down"){
+            player.accelerationY = 0;
+            player.frictionY = player.drag;
+        }
+    } else if(key.code === "ArrowRight" || key.code ==="KeyD"){
+        if(key.type ===  "keydown") {
+            pressedKey = "right";
+            player.accelerationX = player.speed;
+            player.frictionX = 1;
+        } else if (key.type ===  "keyup" && pressedKey !== "left"){
+            player.accelerationX = 0;
+            player.frictionX = player.drag;
+        }
+    } else if(key.code === "ArrowLeft" || key.code ==="KeyA"){
+        if(key.type ===  "keydown") {
+            pressedKey = "left";
+            player.accelerationX = -player.speed;
+            player.frictionX = 1;
+        } else if (key.type ===  "keyup" && pressedKey !== "right"){
+            player.accelerationX = 0;
+            player.frictionX = player.drag;
+        }
     }
-
-    //function to make player move at 60fps
-    function gameLoop() {
-        requestAnimationFrame(gameLoop);
-        state();
-        app.stage.addChild(player);
-    }
-
-    function play() {
-        //adding acceleration and friction
-        player.vx = player.accelerationX;
-        player.vy = player.accelerationY;
-        player.vx *= player.frictionX;
-        player.vy *= player.frictionY;
-
-        //changing velocity properties
-        player.x += player.vx;
-        player.y += player.vy;
-    }
-
-    //random number function
-    function randomInt(min, max) {
-        return Math.floor(Math.random() * (max - min + 1)) + min;
-    }
-
-    function keyboard(keyCode) {
-        let key = {};
-        key.code = keyCode;
-        key.isDown = false;
-        key.isUp = true;
-        key.press = undefined;
-        key.release = undefined;
-        //The `downHandler`
-        key.downHandler = event => {
-            if (event.keyCode === key.code) {
-                if (key.isUp && key.press) key.press();
-                key.isDown = true;
-                key.isUp = false;
-            }
-            event.preventDefault();
-        };
-
-        //The `upHandler`
-        key.upHandler = event => {
-            if (event.keyCode === key.code) {
-                if (key.isDown && key.release) key.release();
-                key.isDown = false;
-                key.isUp = true;
-            }
-            event.preventDefault();
-        };
-
-        //Attach event listeners
-        window.addEventListener(
-            "keydown", key.downHandler.bind(key), false
-        );
-        window.addEventListener(
-            "keyup", key.upHandler.bind(key), false
-        );
-        return key;
-    }
+}
