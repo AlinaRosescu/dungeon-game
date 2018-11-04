@@ -1,0 +1,45 @@
+{
+"frames": {
+	"chest.png": {
+		"frame": {"x":130, "y":1210, "w":28, "h":25},
+		"spriteSourceSize": {"x":0,"y":0,"w":28,"h":25},
+		"sourceSize": {"w":28,"h":25}
+	},
+	"end-gate.png": {
+		"frame": {"x":1086, "y":649, "w":77, "h":98},
+		"spriteSourceSize": {"x":5,"y":0,"w":88,"h":98},
+		"sourceSize": {"w":88,"h":98}
+	},
+	"fox.png": {
+		"frame": {"x":97, "y":1146, "w":46, "h":63},
+		"spriteSourceSize": {"x":0,"y":0,"w":46,"h":63},
+		"sourceSize": {"w":46,"h":63}
+	},
+	"grid-border.png": {
+		"frame": {"x":0, "y":0, "w":1243, "h":648},
+		"spriteSourceSize": {"x":19,"y":77,"w":1280,"h":800},
+		"sourceSize": {"w":1280,"h":800}
+	},
+	"grid.png": {
+		"frame": {"x":0, "y":649, "w":1085, "h":496},
+		"spriteSourceSize": {"x":0,"y":0,"w":1085,"h":496},
+		"sourceSize": {"w":1085,"h":496}
+	},
+	"monster.png": {
+		"frame": {"x":97, "y":1210, "w":32, "h":32},
+		"spriteSourceSize": {"x":0,"y":0,"w":32,"h":32},
+		"sourceSize": {"w":32,"h":32}
+	},
+	"start-gate.png": {
+		"frame": {"x":0, "y":1146, "w":96, "h":77},
+		"spriteSourceSize": {"x":0,"y":6,"w":98,"h":88},
+		"sourceSize": {"w":98,"h":88}
+	}
+
+},
+"meta": {
+	"image": "sprites.png",
+	"size": {"w": 1244, "h": 1243},
+	"scale": "1"
+}
+}
