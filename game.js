@@ -41,7 +41,7 @@ function setup() {
     endGate = new PIXI.Sprite(spriteSheet["end-gate.png"]);
     endGate.position.set(800,350);
     endGate.scale.set(0.7, 0.7);
-    gameScene.addChild(endGate);    
+    gameScene.addChild(endGate);
 
     //add player
     player = new PIXI.Sprite(spriteSheet["fox.png"]);
@@ -58,7 +58,7 @@ function setup() {
     player.drag = 1.5;
     gameScene.addChild(player);
 
-    //add chest    
+    //add chest
     chest = new PIXI.Sprite(spriteSheet["chest.png"]);
     chest.x = 655;
     chest.y = 255;
@@ -110,10 +110,10 @@ function setup() {
     gameOverScene.visible = false;
 
     //create message to let player know of the game outcome
-    let style = new PIXI.TextStyle({fontFamily: "Futura", fontsize: 100, fill: "white"});
+    let style = new PIXI.TextStyle({fontFamily: "Futura", fontSize: 60, fill: "white"});
     message = new PIXI.Text("The end!", style);
-    message.x = 380;
-    message.y = app.stage.height / 2 - 100;
+    message.x = app.view.width / 2 - message.width / 2;
+    message.y = app.view.height / 2 - message.height / 2;
     gameOverScene.addChild(message);
 
     //add event listeners for keyboard controls
@@ -157,11 +157,11 @@ function play() {
     player.y += player.vy;
 
     //move the monsters
-    monsters.forEach((monster) => {        
+    monsters.forEach((monster) => {
         let monsterBounds = monster.getBounds();
         monster.y += monster.vy;
 
-        //check if monsters are hitting the top or bottom wall and contain them       
+        //check if monsters are hitting the top or bottom wall and contain them
         if(monster.y - monster.height <= 5 || monster.y + monster.height >= 460) {
            monster.vy *= -1;
         }
@@ -172,7 +172,7 @@ function play() {
             player.alpha = 0.5;
         }
     })
-    
+
 
     if(healthBar.inner.width < 0) {
         state = end;
@@ -210,9 +210,9 @@ function onKeyDown(key) {
     if(key.code === "ArrowDown") {
         player.accelerationY = player.speed;
         player.frictionY = 1;
-    } else if(key.code === "ArrowUp"){  
+    } else if(key.code === "ArrowUp"){
         player.accelerationY = -player.speed;
-        player.frictionY = 1;        
+        player.frictionY = 1;
     } else if(key.code === "ArrowRight"){
         player.accelerationX = player.speed;
         player.frictionX = 1;
@@ -227,7 +227,7 @@ function onKeyDown(key) {
 function onKeyUp(key) {
     if(key.code === "ArrowDown" && onKeyDown !== "ArrowUp") {
         player.accelerationY = 0;
-        player.frictionY = player.drag;        
+        player.frictionY = player.drag;
     } else if(key.code === "ArrowUp" && onKeyDown !== "ArrowDown"){
         player.accelerationY = 0;
         player.frictionY = player.drag;
@@ -236,12 +236,12 @@ function onKeyUp(key) {
         player.frictionX = player.drag;
     } else if(key.code === "ArrowLeft" && onKeyDown !== "ArrowRight"){
         player.accelerationX = 0;
-        player.frictionX = player.drag;       
+        player.frictionX = player.drag;
     }
 }
 
 //detect collision between player and monsters
-function collisionIsDetected(a,b) {   
+function collisionIsDetected(a,b) {
     return (a.x + a.width > b.x) &&
         (a.x < b.x + b.width) &&
         (a.y + a.height > b.y) &&
